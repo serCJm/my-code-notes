@@ -1,12 +1,19 @@
 ---
-title: Union Find
+title: Union Find (Disjoint Sets)
 tags:
   - data-structures
 emoji: 🌲
 link: https://www.youtube.com/watch?v=ibjEGG7ylHk
 ---
 
-## JS Implementation
+## Description
+Disjoint sets are sets with nothing in common.
+Find is an operation that determines weather an element belongs to a particular set.
+Union connects two components/sets together.
+
+Also, helps to find if there's a cycle present in a graph. When uniting components together into sets, one by one, if both components are already present in a particular set, that would form a cycle, so don't unite them.
+
+### JS Implementation
 
 ```js
 function UnionFind(count) {
