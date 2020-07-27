@@ -1,5 +1,5 @@
 ---
-title: Kruskal algorithm
+title: Kruskal
 tags:
   - algorithms
 emoji: 💻
