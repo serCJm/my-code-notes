@@ -46,3 +46,22 @@ interface ComponentProps {}
 export const Component = styled.div<ComponentProps>`
 ```
 
+## React Native
+
+### Passing Through Styles
+
+```jsx
+import React from "react";
+import { StyleSheet, View, ViewStyle } from "react-native";
+
+type Props = {
+	style: ViewStyle;
+};
+
+const Card: React.FC<Props> = ({ children, style }) => {
+	return <View style={{ ...styles.card, ...style }}>{children}</View>;
+};
+
+export default Card;
+```
+
