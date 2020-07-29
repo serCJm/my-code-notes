@@ -46,9 +46,9 @@ Install Android Studio to emulate development on the pc.
 
 ## Working With Core Components
 
-<View> is like a div. It's used for layout and styling.
+&lt;View> is like a div. It's used for layout and styling.
 
-Text can only be put inside a <Text> component.
+Text can only be put inside a &lt;Text> component.
 
 ## Styling
 
@@ -78,9 +78,14 @@ const styles = StyleSheet.create({
 });
 ```
 
-To make area scrollable, use <ScrollView> component. However, note that <ScrollView> will render all items in the advance, which can affect performance with very long lists. For 'infinite' lists, use <FlatList data={inputData} renderItem={itemData => <Text>{itemData.item.value}</Text>}> component (note, use keyExtractor for unique key properties).
+To make area scrollable, use &lt;ScrollView> component. However, note that &lt;ScrollView> will render all items in advance, which can affect performance with very long lists. For 'infinite' lists, use:
 
-<Touchable> and its child components allow to listen and respond to touch events.
+```jsx
+<FlatList data={inputData} renderItem={itemData => <Text>{itemData.item.value}</Text>}>
+//note, use keyExtractor for unique key properties.
+```
+
+&lt;Touchable> and its child components allow to listen and respond to touch events.
 
 ## Error Handling
 
