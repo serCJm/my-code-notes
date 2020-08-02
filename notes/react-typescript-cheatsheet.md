@@ -7,7 +7,9 @@ emoji: 📔
 link: https://github.com/typescript-cheatsheets/react-typescript-cheatsheet
 ---
 
-## Functional Components
+## React
+
+### Functional Components
 
 ```tsx
 import React from "react";
@@ -36,7 +38,7 @@ const SomeComponent: React.FC<Props> = ({
 export default SomeComponent;
 ```
 
-## Styled Components
+### Styled Components
 
 ```jsx
 import styled from 'styled-components'
@@ -82,4 +84,18 @@ const Input: React.FC<Props> = (props) => {
 		></TextInput>
 	);
 };
+```
+
+### Handling Text Input
+```jsx
+import {
+	NativeSyntheticEvent,
+	TextInputTextInputEventData,
+} from "react-native";
+
+function numberInputHandler(
+		e: NativeSyntheticEvent<TextInputTextInputEventData>
+	) {
+		setEnteredValue(e.nativeEvent.text.replace(/[^0-9]/g, ""));
+	}
 ```
