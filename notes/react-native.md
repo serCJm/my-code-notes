@@ -87,6 +87,94 @@ To make area scrollable, use &lt;ScrollView> component. However, note that &lt;S
 
 &lt;Touchable> and its child components allow to listen and respond to touch events.
 
+### Adding fonts
+Add fonts into a dedicated folder (./assets/fonts).
+
+```jsx
+import * as Font from "expo-font";
+import { AppLoading } from "expo";
+
+function fetchFonts() {
+	return Font.loadAsync({
+		"open-sans": require("./assets/fonts/OpenSans-Regular.ttf"),
+		"open-sans-bold": require("./assets/fonts/OpenSans-Bold.ttf"),
+	});
+}
+
+export default function App() {
+	const [dataLoaded, setDataLoaded] = useState(false);
+
+	if (!dataLoaded) {
+		return <AppLoading
+				startAsync={fetchFonts}
+				onFinish={() => setDataLoaded(true)}
+				onError={(err) => console.log(err)}
+			></AppLoading>;
+	}
+}
+```
+
+### Setting Global Styles
+1. Can create a custom component wrapper with the desired styled attached. (i.e. &lt;BodyText>)
+2. Have a globally managed StyleSheet that you import into a component and apply where needed.
+
+```jsx
+import React from "react";
+import { StyleSheet, Text, TextStyle } from "react-native";
+
+interface Props {
+	style?: TextStyle;
+}
+
+const BodyText: React.FC<Props> = ({ style, children }) => {
+	return <Text style={{ ...styles.text, ...style }}>{children}</Text>;
+};
+
+export default BodyText;
+
+const styles = StyleSheet.create({
+	text: {
+		fontFamily: "open-sans",
+	},
+});
+```
+
+### Styling Images
+```jsx
+import { StyleSheet, View, Image } from "react-native";
+
+const GameOverScreen: React.FC<Props> = () => {
+	return (
+		<View style={styles.imageContainer}>
+			<Image
+				source={require("../assets/success.png")}
+				style={styles.image}
+				resizeMode="contain"
+			></Image>
+		</View>
+
+	);
+};
+
+export default GameOverScreen;
+
+const styles = StyleSheet.create({
+	imageContainer: {
+		width: 300,
+		height: 300,
+		borderRadius: 150,
+		borderWidth: 3,
+		borderColor: "black",
+		overflow: "hidden",
+		marginVertical: 30,
+	},
+	image: {
+		width: "100%",
+		height: "100%",
+	},
+});
+```
+
 ## Error Handling
 
 ### Debugging Logic
@@ -100,6 +188,8 @@ A new tab will open in a browser that you can use for debugging. In the browser,
 Open Expo menu overlay and click on 'Toggle Inspector'. This will enable a menu showing styling information about components.
 
 Another option is to install React Native Debugger. Note, you will need to enable Remote Debugging for it to work.
+
+
 
 
 
