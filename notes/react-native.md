@@ -48,7 +48,34 @@ Install Android Studio to emulate development on the pc.
 
 &lt;View> is like a div. It's used for layout and styling.
 
-Text can only be put inside a &lt;Text> component.
+&lt;View> uses Flexbox to organize its children. A &lt;View> can hold as many child components as you need and it also works with any kind of child component - it can hold &lt;Text> components, other &lt;View>s (for nested containers/ layouts), &lt;Image>s, custom components etc.
+
+To make area scrollable, use &lt;ScrollView> component. Also, if wrapping &lt;ScrollView> with &lt;View>, remember to set flex: 1 on Android to make it scrollable. To style &lt;ScrollView>, use contentContainerStyle prop with flexGrow.
+
+However, note that &lt;ScrollView> will render all items in advance, which can affect performance with very long lists. For 'infinite' lists, use:
+
+```jsx
+<FlatList data={inputData} renderItem={itemData => <Text>{itemData.item.value}</Text>}>
+//note, use keyExtractor for unique key properties.
+```
+
+&lt;Touchable> and its child components allow to listen and respond to touch events.
+
+Text can only be put inside a &lt;Text> component. &lt;Text> components can also be nested inside each other and will also inherit styling. Actually, you can also have nested &lt;View>s inside of a &lt;Text> but that comes with certain caveats/bugs you should watch out for.
+
+Unlike &lt;View>, &lt;Text> does NOT use Flexbox for organizing its content (i.e. the text or nested components). Instead, text inside of &lt;Text> automatically fills a line as you would expect it and wraps into a new line if the text is too long for the available &lt;Text> width.
+
+You can avoid wrapping by setting the numberOfLines prop, possibly combined with ellipsizeMode.
+
+```jsx
+Text numberOfLines={1} ellipsizeMode="tail">
+  This text will never wrap into a new line, instead it will be cut off like this if it is too lon...
+</Text>
+```
+
+Also important: When adding styles to a &lt;Text> (no matter if that happens via inline styles or a StyleSheet object), the styles will actually be shared with any nested &lt;Text> components.
+
+This differs from the behavior of &lt;View> (or actually any other component - &lt;Text> is the exception): There, any styles are only applied to the component to which you add them. Styles are never shared with any child component!s
 
 ## Styling
 
@@ -78,15 +105,6 @@ const styles = StyleSheet.create({
 });
 ```
 
-To make area scrollable, use &lt;ScrollView> component. However, note that &lt;ScrollView> will render all items in advance, which can affect performance with very long lists. For 'infinite' lists, use:
-
-```jsx
-<FlatList data={inputData} renderItem={itemData => <Text>{itemData.item.value}</Text>}>
-//note, use keyExtractor for unique key properties.
-```
-
-&lt;Touchable> and its child components allow to listen and respond to touch events.
-
 ### Adding fonts
 Add fonts into a dedicated folder (./assets/fonts).
 
@@ -112,6 +130,13 @@ export default function App() {
 			></AppLoading>;
 	}
 }
+```
+
+### Adding icons
+```jsx
+import { Ionicons } from "@expo/vector-icons";
+
+<Ionicons name="md-remove" size={24} color="white"/>
 ```
 
 ### Setting Global Styles
@@ -175,6 +200,96 @@ const styles = StyleSheet.create({
 });
 ```
 
+Note, to load an image from the web, use source={{uri: 'link'}} and explicitly set width and height (RN is unable to determine the right size).
+
+### Responsive Interfaces
+
+For flexile interfaces, use Dimensions API. Import it from react-native and use its object.
+
+```jsx
+const styles = StyleSheet.create({
+	button: {
+		width: Dimensions.get('window').width / 4,
+		// note, can also apply conditional styles in render
+		marginTop: Dimensions.get("window").height > 600 ? 20 : 5,
+	}
+});
+```
+
+Dimensions only runs on component render. Thus, if you change orientation, the layout won't update until refresh. If you have a property that needs to orientation layout changes, instead of managing it with Dimensions like above, manage it with state:
+
+```jsx
+	const [buttonWidth, setButtonWidth] = useState(
+		Dimensions.get("window").width / 4
+	);
+
+	useEffect(() => {
+		function updateLayout() {
+			setButtonWidth(Dimensions.get("window").width / 4);
+		}
+
+		Dimensions.addEventListener("change", updateLayout);
+		return () => {
+			Dimensions.removeEventListener("change", updateLayout);
+		};
+	}, []);
+
+	// <View style={{ width: buttonWidth }}>
+	// 	<Button
+	// 		title="Reset"
+	// 		color={Colors.accent}
+	// 		onPress={resetInputHandler}
+	// 	></Button>
+	// </View>
+```
+
+Note, you can also render different layouts based on the Dimensions state.
+
+### Orientation
+
+You can adjust "locked in" orientation in expo in app.json. Change it to either portrait, landscape, default (supports both). Then you will be able to rotate the screen in an emulator.
+
+To prevent keyboard from covering content, use KeyboardAvoidingView inside ScrollView:
+```jsx
+<ScrollView>
+	<KeyboardAvoidingView
+		behavior="position"
+		keyboardVerticalOffset={30}
+	>
+	</KeyboardAvoidingView>
+</ScrollView>
+```
+
+For layouts that don't depend on width and height but only depend on screen orientation, use ScreenOrientation API.
+
+### Platform
+
+To style based on a platform, use Platform API.
+
+```jsx
+const styles = StyleSheet.create({
+	button: {
+		backgroundColor: Platform.OS === 'android' ? 'green' : 'red',
+		borderBottomWidth: Platform.OS === 'ios' ? 2 : 5,
+	}
+});
+
+// OR
+<View style={{...styles.headerBaseStyle, ...Platform.select({ios: styles.headerIOS, android: styles.headerAndroid})}}></View>
+
+// OR
+let ButtonComponent = TouchableOpacity;
+if (Platform.OS === 'android' && Platform.version >= 21) {
+	ButtonComponent = TouchableNativeFeedback;
+}
+```
+
+Another way to handle different platforms is to use platform specific files by giving either .android or .ios file extensions: Button.android.jsx or Button.ios.jsx. Note, when importing these files, do not provide the extension. Expo will automatically use the right file for each platform.
+
+### Avoiding Notches And Native Buttons
+
+Wrap your top (outer) content with SafeAreaView to prevent screen notches and other native ui elements from covering your app screen space.
+
 ## Error Handling
 
 ### Debugging Logic
@@ -188,6 +303,124 @@ A new tab will open in a browser that you can use for debugging. In the browser,
 Open Expo menu overlay and click on 'Toggle Inspector'. This will enable a menu showing styling information about components.
 
 Another option is to install React Native Debugger. Note, you will need to enable Remote Debugging for it to work.
+
+## Navigation
+
+Install with this command:
+```cli
+npm install react-navigation
+
+expo install react-native-gesture-handler react-native-reanimated react-native-screens react-native-safe-area-context @react-native-community/masked-view
+```
+
+### Stack Navigation
+
+npm install --save react-navigation-stack
+
+Used to navigate back and forth between screens where screen is stacked on top.
+
+```jsx
+// example: https://medium.com/@vdelacou/add-react-navigation-to-react-native-typescript-app-d1cf855b3fe7
+// ROOT NAVIGATOR
+import { createStackNavigator } from "react-navigation-stack";
+import CategoriesScreen from "../screens/CategoriesScreen";
+import CategoriesMealScreen from "../screens/CategoryMealsScreen";
+import MealDetailScreen from "../screens/MealDetailScreen";
+import { createAppContainer } from "react-navigation";
+
+export enum ROUTES {
+	Categories = "Categories",
+	CategoryMeals = "CategoryMeals",
+	MealDetail = "MealDetail",
+}
+
+// set screens
+const MealNavigator = createStackNavigator(
+	{
+		[ROUTES.Categories]: {
+			screen: CategoriesScreen,
+			// navigationOptions: {
+			// 	headerTitle: 'some title'
+			// }
+		},
+		[ROUTES.CategoryMeals]: {
+			screen: CategoriesMealScreen,
+		},
+		[ROUTES.MealDetail]: {
+			screen: MealDetailScreen,
+		},
+	},
+	{
+		defaultNavigationOptions: {
+			headerStyle: {
+				backgroundColor:
+					Platform.OS === "android" ? Colors.primaryColor : "",
+			},
+			headerTintColor: "white",
+		},
+	}
+);
+
+// always wrap root/most important navigator
+export default createAppContainer(MealNavigator);
+
+// SCREEN COMPONENT
+import React from "react";
+import { StyleSheet, Text, View, Button } from "react-native";
+import { CATEGORIES } from "../data/data";
+import Category from "../models/category";
+import { NavigationScreenComponent } from "react-navigation";
+import {
+	NavigationStackScreenProps,
+	NavigationStackOptions,
+} from "react-navigation-stack";
+
+type Params = {};
+
+type ScreenProps = {};
+
+const CategoriesMealScreen: NavigationScreenComponent<Params, ScreenProps> = (
+	props
+) => {
+	const catId = props.navigation.getParam("categoryId");
+
+	const selectedCategory: Category | undefined = CATEGORIES.find(
+		(cat) => cat.id === catId
+	);
+	return (
+		<View style={styles.screen}>
+			<Text>The CategoriesMealScreens Screen!</Text>
+			<Text>{selectedCategory?.title}</Text>
+			<Button
+				title="Go To Details!"
+				onPress={() =>
+					// alternative syntax
+					// props.navigation.navigate('SomeIdentifier');
+					// can also use push, pop, replace, popToTop, goBack
+					props.navigation.navigate({ routeName: "MealDetail" })
+				}
+			></Button>
+			<Button
+				title="Go Back!"
+				onPress={() => props.navigation.goBack()}
+			></Button>
+		</View>
+	);
+};
+
+CategoriesMealScreen.navigationOptions = (
+	navigationData: NavigationStackScreenProps
+): NavigationStackOptions => {
+	const catId = navigationData.navigation.getParam("categoryId", "None");
+	const selectedCategory: Category | undefined = CATEGORIES.find(
+		(cat) => cat.id === catId
+	);
+	return {
+		headerTitle: selectedCategory?.title,
+	};
+};
+
+```
 
 
 
