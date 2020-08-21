@@ -313,6 +313,13 @@ npm install react-navigation
 expo install react-native-gesture-handler react-native-reanimated react-native-screens react-native-safe-area-context @react-native-community/masked-view
 ```
 
+Also, install react-native-screens for better optimization. npm install react-native-screens:
+```jsx
+// in top component
+import { enableScreens } from "react-native-screens";
+enableScreens();
+```
+
 ### Stack Navigation
 
 npm install --save react-navigation-stack
@@ -339,6 +346,7 @@ const MealNavigator = createStackNavigator(
 	{
 		[ROUTES.Categories]: {
 			screen: CategoriesScreen,
+			// note, specific options always win over default
 			// navigationOptions: {
 			// 	headerTitle: 'some title'
 			// }
@@ -420,6 +428,109 @@ CategoriesMealScreen.navigationOptions = (
 	};
 };
 
+```
+
+When defining a navigator, you can also add navigationOptions to it:
+```jsx
+    const SomeNavigator = createStackNavigator({
+        ScreenIdentifier: SomeScreen
+    }, {
+        navigationOptions: {
+            // You can set options here!
+            // Please note: This is NOT defaultNavigationOptions!
+        }
+    });
+```
+Don't mistake this for the defaultNavigationOptions which you could also set there (i.e. in the second argument you pass to createWhateverNavigator()).
+
+The navigationOptions you set on the navigator will NOT be used in its screens! That's the difference to defaultNavigationOptions - those option WILL be merged with the screens.
+
+So what's the use of navigationOptions in that place then?
+
+The options become important once you use the navigator itself as a screen in some other navigator - for example if you use some stack navigator (created via createStackNavigator()) in a tab navigator (e.g. created via createBottomTabNavigator()).
+
+### Navigation Buttons
+
+1. Install react-navigation-header-buttons package
+2. Use the button:
+```jsx
+import React from "react";
+import { Platform } from "react-native";
+import { HeaderButton } from "react-navigation-header-buttons";
+import { Ionicons } from "@expo/vector-icons";
+import { Colors } from "../constants/Colors";
+
+interface Props {
+	title: string;
+}
+
+const CustomHeaderButton = (props: Props) => {
+	return (
+		<HeaderButton
+			{...props}
+			IconComponent={Ionicons}
+			iconSize={23}
+			color={Platform.OS === "android" ? "white" : Colors.primaryColor}
+		></HeaderButton>
+	);
+};
+
+export default CustomHeaderButton;
+
+// then use in a component:
+MealDetailScreen.navigationOptions = (
+	navigationData: NavigationStackScreenProps
+): NavigationStackOptions => {
+	const mealId = navigationData.navigation.getParam("mealId");
+	const selectedMeal = MEALS.find((meal) => meal.id === mealId);
+	return {
+		headerTitle: selectedMeal?.title,
+		headerRight: () => (
+			<HeaderButtons HeaderButtonComponent={CustomHeaderButton}>
+				<Item
+					title="Favorite"
+					iconName="ios-star"
+					onPress={() => {}}
+				></Item>
+			</HeaderButtons>
+		),
+	};
+};
+```
+
+### Tabs Navigation
+```jsx
+const MealsFavTabNavigator = createBottomTabNavigator({
+	Meals: {
+		screen: MealNavigator,
+		navigationOptions: {
+			tabBarIcon: (tabInfo) => {
+				return (
+					<Ionicons
+						name="ios-restaurant"
+						size={25}
+						color={tabInfo.tintColor}
+					></Ionicons>
+				);
+			},
+		},
+	},
+	Favorites: {
+		screen: FavoritesScreen,
+		navigationOptions: {
+			tabBarLabel: "Favorites!",
+			tabBarIcon: (tabInfo) => {
+				return (
+					<Ionicons
+						name="ios-star"
+						size={25}
+						color={tabInfo.tintColor}
+					></Ionicons>
+				);
+			},
+		},
+	},
+});
 ```
 
 
