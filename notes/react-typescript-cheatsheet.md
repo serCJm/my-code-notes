@@ -21,12 +21,14 @@ export type Question = {
 export type QuestionState = Question & { answers: string[] };
 
 type Props = {
+	children: React.ReactNode
 	question: string;
 	answer: string[];
 	callback: (e: React.MouseEvent<HTMLButtonElement>) => void;
 };
 
 const SomeComponent: React.FC<Props> = ({
+	children,
 	question,
 	answer,
 	callback
