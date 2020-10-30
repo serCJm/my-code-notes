@@ -383,12 +383,16 @@ import {
 	NavigationStackOptions,
 } from "react-navigation-stack";
 
+type Props = {
+	navigation: NavigationStackProp
+}
+
 type Params = {};
 
 type ScreenProps = {};
 
 const CategoriesMealScreen: NavigationScreenComponent<Params, ScreenProps> = (
-	props
+	props: Props
 ) => {
 	const catId = props.navigation.getParam("categoryId");
 
@@ -445,9 +449,7 @@ Don't mistake this for the defaultNavigationOptions which you could also set the
 
 The navigationOptions you set on the navigator will NOT be used in its screens! That's the difference to defaultNavigationOptions - those option WILL be merged with the screens.
 
-So what's the use of navigationOptions in that place then?
-
-The options become important once you use the navigator itself as a screen in some other navigator - for example if you use some stack navigator (created via createStackNavigator()) in a tab navigator (e.g. created via createBottomTabNavigator()).
+These options become important once you use the navigator itself as a screen in some other navigator - for example if you use some stack navigator (created via createStackNavigator()) in a tab navigator (e.g. created via createBottomTabNavigator()).
 
 ### Navigation Buttons
 
@@ -533,6 +535,32 @@ const MealsFavTabNavigator = createBottomTabNavigator({
 });
 ```
 
+Fot Android native looking tabs, use packages react-navigation-material-bottom-tabs and react-native-paper.
+
+### Drawer Navigation
+```jsx
+const MainNavigator = createDrawerNavigator({
+	MealsFavs: {
+	screen: MealsFavTabNavigator,
+	navigationOptions: {
+		drawerLabel: 'Meals'
+	}
+	},
+	Filters: {
+		screen: FiltersNavigator,
+		navigationOptions: {
+			drawerLabel: 'Filters'
+		}
+		,
+}}, {
+	contentOptions: {
+		activeTintColor: Colors.accentColor,
+		labelStyle: {
+			fontFamily: 'open-sans-bold'
+		}
+	}
+});
+```
 
 
 
