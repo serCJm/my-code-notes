@@ -606,7 +606,49 @@ FiltersScreen.navigationOptions = (
 };
 ```
 
+## Store Management
 
+### Setting up Redux
+
+```cli
+npm install redux react-redux
+```
+
+Create store folder => reducers + actions folders
+
+Create a reducer:
+```jsx
+import { MEALS } from "../../../data/data"
+
+const initialState = {
+	meals: MEALS,
+	filteredMeals: MEALS,
+	favoriteMeals: []
+}
+
+const mealsReducer = (state = initialState, action) {
+	return state
+}
+```
+
+Create store
+```jsx
+import { createStore, combineReducers } from "redux";
+import { mealsReducer } from "./store/reducers";
+import { Provider } from "react-redux";
+
+const rootReducer = combineReducers({
+	meals: mealsReducer,
+});
+
+const store = createStore(rootReducer);
+
+return (
+		<Provider store={store}>
+			<MealsNavigator></MealsNavigator>
+		</Provider>
+	);
+```
 
 
 
