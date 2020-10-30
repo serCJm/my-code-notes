@@ -562,6 +562,52 @@ const MainNavigator = createDrawerNavigator({
 });
 ```
 
+### Passing Data Between Component and navigationOptions
+```jsx
+const saveFilters = useCallback(() => {
+		const appliedFilters = {
+			glutenFree: isGlutenFree,
+			lactoseFree: isLactoseFree,
+			vegan: isVegan,
+			isVegeterean: isVegeterean,
+		};
+	}, [isGlutenFree, isLactoseFree, isVegan, isVegeterean]);
+
+	useEffect(() => {
+		navigation.setParams({ save: saveFilters });
+	}, [saveFilters]);
+
+type navOptions = NavigationStackScreenProps & NavigationDrawerScreenProps;
+
+FiltersScreen.navigationOptions = (
+	navData: navOptions
+): NavigationStackOptions => {
+	return {
+		headerTitle: "Filter Meals",
+		headerLeft: () => (
+			<HeaderButtons HeaderButtonComponent={CustomHeaderButton}>
+				<Item
+					title="Menu"
+					iconName="ios-menu"
+					onPress={() => navData.navigation.toggleDrawer()}
+				></Item>
+			</HeaderButtons>
+		),
+		headerRight: () => (
+			<HeaderButtons HeaderButtonComponent={CustomHeaderButton}>
+				<Item
+					title="Save"
+					iconName="ios-save"
+					onPress={navData.navigation.getParam("save")}
+				></Item>
+			</HeaderButtons>
+		),
+	};
+};
+```
+
+
+
 
 
 
