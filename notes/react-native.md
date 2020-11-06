@@ -618,17 +618,50 @@ Create store folder => reducers + actions folders
 
 Create a reducer:
 ```jsx
-import { MEALS } from "../../../data/data"
+// import Meal from "../models/meal";
 
-const initialState = {
+// export type MealState = {
+// 	meals: Meal[];
+// 	filteredMeals: Meal[];
+// 	favoriteMeals: Meal[];
+// };
+import { MEALS } from "../../data/data";
+import { MealsActionTypes, TOGGLE_FAVORITE } from "../actions/types";
+import { MealState } from "../type";
+
+const initialState: MealState = {
 	meals: MEALS,
 	filteredMeals: MEALS,
-	favoriteMeals: []
-}
+	favoriteMeals: [],
+};
 
-const mealsReducer = (state = initialState, action) {
-	return state
-}
+export const mealsReducer = (
+	state = initialState,
+	action: MealsActionTypes
+): MealState => {
+	switch (action.type) {
+		case TOGGLE_FAVORITE:
+			const existingIndex = state.favoriteMeals.findIndex(
+				(meal) => meal.id === action.mealId
+			);
+			if (existingIndex >= 0) {
+				const updatedFavMeals = [...state.favoriteMeals];
+				updatedFavMeals.splice(existingIndex, 1);
+				return { ...state, favoriteMeals: updatedFavMeals };
+			} else {
+				const meal = state.meals.find(
+					(meal) => meal.id === action.mealId
+				);
+				if (meal)
+					return {
+						...state,
+						favoriteMeals: state.favoriteMeals.concat(meal),
+					};
+			}
+		default:
+			return state;
+	}
+};
 ```
 
 Create store
@@ -641,6 +674,8 @@ const rootReducer = combineReducers({
 	meals: mealsReducer,
 });
 
+export type RootState = ReturnType<typeof rootReducer>;
+
 const store = createStore(rootReducer);
 
 return (
@@ -650,7 +685,50 @@ return (
 	);
 ```
 
+In the component, use useSelector:
+```jsx
+const availableMeals = useSelector((state: RootState) => state.meals.meals);
+```
 
+To forward state store to navigationOptions either set parameters in the component using setParams and useEffect (however, can lead to stale initial state) or pass forward from a screen from which coming to that screen.
+
+Add an action:
+```jsx
+// export const TOGGLE_FAVORITE = "TOGGLE_FAVORITE";
+
+// interface ToggleFavoriteAction {
+// 	type: typeof TOGGLE_FAVORITE;
+// 	mealId: string;
+// }
+
+// interface DeleteMessageAction {
+// 	type: typeof DELETE_MESSAGE;
+// 	meta: {
+// 		timestamp: number;
+// 	};
+// }
+
+// export type MealsActionTypes = ToggleFavoriteAction;
+
+import { ToggleFavoriteAction, TOGGLE_FAVORITE } from "./types";
+
+export const toggleFavorite = (id: string): ToggleFavoriteAction => {
+	return { type: TOGGLE_FAVORITE, mealId: id };
+};
+```
+
+Dispatch an action:
+```jsx
+const dispatch = useDispatch();
+
+const toggleFavoriteHandler = useCallback(() => {
+	dispatch(toggleFavorite(mealId));
+}, [dispatch, mealId]);
+
+useEffect(() => {
+	props.navigation.setParams({ toggleFav: toggleFavoriteHandler });
+}, [toggleFavoriteHandler]);
+```
 
 
 
