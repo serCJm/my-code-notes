@@ -606,6 +606,39 @@ FiltersScreen.navigationOptions = (
 };
 ```
 
+### Accessing Navigation Outside of Navigator
+```jsx
+const NavigationContainer = (props: Props) => {
+	const isAuth = useSelector((state: RootState) => !!state.auth.token);
+	const navRef: React.RefObject<NavigationContainerComponent> | null = useRef() as React.RefObject<NavigationContainerComponent> | null;
+	useEffect(() => {
+		if (!isAuth && navRef) {
+			navRef?.current?.dispatch(
+				NavigationActions.navigate({ routeName: "Auth" })
+			);
+		}
+	}, [isAuth]);
+	return <ShopNavigator ref={navRef}></ShopNavigator>;
+};
+
+export default NavigationContainer;
+
+const styles = StyleSheet.create({});
+```
+
+```jsx
+// ShopNavigator
+type NavContainerParams = {};
+
+type NavContainerProps = {
+	ref: React.RefObject<NavigationContainerComponent> | null;
+};
+
+export default createAppContainer<NavContainerParams, NavContainerProps>(
+	MainNavigator
+);
+```
+
 ## Store Management
 
 ### Setting up Redux
