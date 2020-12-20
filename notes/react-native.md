@@ -763,7 +763,213 @@ useEffect(() => {
 }, [toggleFavoriteHandler]);
 ```
 
+## Using Device Features
 
+### Using Camera
+
+Either use ImagePicker or Camera expo components. Note, these need to be installed separately. (expo install expo-image-picker)
+
+Note, to access camera on iOS, need to access it first. Use Permissions expo package. (expo install expo-permissions)
+
+```jsx
+import React, { useState } from "react";
+import { Button, StyleSheet, Text, View, Image, Alert } from "react-native";
+import * as ImagePicker from "expo-image-picker";
+import * as Permissions from "expo-permissions";
+import { Colors } from "../assets/Colors";
+
+interface Props {
+	onImageTake: (imageUri: string) => void;
+}
+
+const ImagePickerComponent = (props: Props) => {
+	const [pickedImage, setPickedImage] = useState("");
+	const verifyPermissions = async () => {
+		const result = await Permissions.askAsync(
+			Permissions.CAMERA,
+			Permissions.CAMERA_ROLL
+		);
+		if (result.status !== "granted") {
+			Alert.alert(
+				"No Permissions Found",
+				"Need permissions to access camera.",
+				[{ text: "OK" }]
+			);
+			return false;
+		}
+		return true;
+	};
+	const takeImageHandler = async () => {
+		const hasPermissions = await verifyPermissions();
+		if (!hasPermissions) return;
+		const image = await ImagePicker.launchCameraAsync({
+			allowsEditing: true,
+			aspect: [16, 9],
+			quality: 0.5,
+		});
+		if (!image.cancelled) {
+			setPickedImage(image.uri);
+			props.onImageTake(image.uri);
+		}
+	};
+	return (
+		<View style={styles.imagePicker}>
+			<View style={styles.imagePreview}>
+				{!pickedImage ? (
+					<Text>No image picked yet.</Text>
+				) : (
+					<Image
+						style={styles.image}
+						source={{ uri: pickedImage }}
+					></Image>
+				)}
+			</View>
+			<Button
+				title="Take Image"
+				color={Colors.PRIMARY}
+				onPress={takeImageHandler}
+			></Button>
+		</View>
+	);
+};
+
+export default ImagePickerComponent;
+```
+
+### Storing Image on Filesystem
+
+To move files from one directory to another, use file-system expo package.
+
+```jsx
+import * as FileSystem from "expo-file-system";
+import { ThunkAction } from "redux-thunk";
+import { RootState } from "../App";
+import { ADD_PLACE, PlacesActionTypes } from "./types";
+
+export const addPlace = (
+	title: string,
+	image: string
+): ThunkAction<void, RootState, unknown, PlacesActionTypes> => {
+	return async (dispatch) => {
+		const fileName = image.split("/").pop() || "";
+		const newPath = FileSystem.documentDirectory
+			? FileSystem.documentDirectory + fileName
+			: `${new Date().toISOString()}.jpg`;
+		try {
+			await FileSystem.moveAsync({
+				from: image,
+				to: newPath,
+			});
+		} catch (e) {
+			console.log(e);
+			throw e;
+		}
+		return dispatch({
+			type: ADD_PLACE,
+			placeData: { title, image: newPath },
+		});
+	};
+};
+```
+
+### Using SQLite For Device Storage
+
+Use expo sqlite package.
+
+```jsx
+import * as SQLite from "expo-sqlite";
+
+const db = SQLite.openDatabase("places.db");
+
+export const init = () => {
+	const promise = new Promise((res, rej) => {
+		db.transaction((tx) => {
+			tx.executeSql(
+				"CREATE TABLE IF NOT EXISTS places (id INTEGER PRIMARY KEY NOT NULL, title TEXT NOT NULL, imageUri TEXT NOT NULL, address TEXT NOT NULL, lat REAL NOT NULL, lng REAL NOT NULL);",
+				[],
+				() => {
+					res();
+				},
+				(_, err) => {
+					rej(err);
+					return false;
+				}
+			);
+		});
+	});
+	return promise;
+};
+
+export const insertPlace = (
+	title: string,
+	imageUri: string,
+	address: string,
+	lat: number,
+	lng: number
+) => {
+	const promise = new Promise((res, rej) => {
+		db.transaction((tx) => {
+			tx.executeSql(
+				"INSERT INTO places (title, imageUri, address, lat, lng) VALUES (?, ?, ?, ?, ?);",
+				[title, imageUri, address, lat, lng],
+				(_, result) => {
+					res(result);
+				},
+				(_, err) => {
+					rej(err);
+					return false;
+				}
+			);
+		});
+	});
+	return promise;
+};
+
+export const fetchPlaces = () => {
+	const promise = new Promise((res, rej) => {
+		db.transaction((tx) => {
+			tx.executeSql(
+				"SELECT * FROM places;",
+				[],
+				(_, result) => {
+					res(result);
+				},
+				(_, err) => {
+					console.log("Fetch places error");
+					rej(err);
+					return false;
+				}
+			);
+		});
+	});
+	return promise;
+};
+
+interface ISQLResultSet extends SQLite.SQLResultSet {
+	rows: {
+		_array: Place[];
+		length: number;
+		item(index: number): any;
+	};
+}
+
+export const getPlaces = (): ThunkAction<
+	void,
+	RootState,
+	unknown,
+	PlacesActionTypes
+> => {
+	return async (dispatch) => {
+		try {
+			const dbResult = (await fetchPlaces()) as ISQLResultSet;
+			dispatch({ type: SET_PLACES, places: dbResult.rows._array });
+		} catch (e) {
+			console.log(e);
+			throw e;
+		}
+	};
+};
+```
 
 
 
