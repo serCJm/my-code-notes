@@ -971,6 +971,32 @@ export const getPlaces = (): ThunkAction<
 };
 ```
 
+## Building Apps With Just React Native CLI
+
+React Native CLI
+
+ - Unlike Expo, can use any 3rd party packages.
+ - Also, takes less size and offers better performance.
+ - Will need to install additional packages
+ - Uses Android Studio or XCode to build the app without any Expo wrappers.
+ - Set up machine locally (Android vs iOS - Studio or XCode).
+ - Install react-native-cli.
+ - Writing code is the same, only imports and build processes differ.
+ - Live reload will also need to be enables separately.
+ - Might need to change eslint and permissions manifest manually for some packages - usually instructions are provided.
+
+Expo Bare Workflow:
+
+- Same as React Native CLI, only it's already pre-configured to run majority of expo packages.
+
+Ejecting from Expo's "Managed Workflow"
+
+- Can use to build using all expo features and then eject to get 'Bare Workflow' to install 3rd party packages.
+- Might still need to do some manual setup sometimes after ejecting.
+- Note, it's a one-time action, can not be reversed.
+- Remember to remove unused permissions in Manifest files.
+
+For most apps (unless building a large scale app) can always start with Expo and eject if you need to.
 
 
 
