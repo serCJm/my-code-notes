@@ -998,6 +998,29 @@ Ejecting from Expo's "Managed Workflow"
 
 For most apps (unless building a large scale app) can always start with Expo and eject if you need to.
 
+## Publishing
+
+1. Test and Polish code (on all devices)
+	1. Expo managed app is easier. In non-Expo you would have to configure all yourself
+	2. Configure app.json
+2. Configure App/Deployment (name, identifier)
+3. Add Icons and Splash Screen
+	1. Change Images in assets folder
+4. Build and Deploy
+	1. To publish, run 'expo publish'
+	2. Note, by default, expo will store your assets (images and fonts) on the cloud. It reduces app size. However, published app will need internet connection at all times to download these.
+	3. To control which assets are on a server and which are included, use 'assetBundlePatterns' configuration option in app.json
+	4. Over-the-air updates are controlled with 'updates' configuration option in app.json
+	5. When building for app stores, might need to change app.json configuration depending on the features you are using:
+		1. 'package' unique key
+		2. Build number for iOS and version number for android
+		3. Will need to provide permissions
+		4. API keys
+	6. Building is preparing separate bundles for android and ios app stores. Publishing is uploading the app to expo servers.
+	7. After building publishing to expo servers and deploying to app stores from there, updates are shared automatically to the app stores
+	8. To build: expo build:android | expo build:ios
+
+
 
 
 
