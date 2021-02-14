@@ -1020,6 +1020,34 @@ For most apps (unless building a large scale app) can always start with Expo and
 	7. After building publishing to expo servers and deploying to app stores from there, updates are shared automatically to the app stores
 	8. To build: expo build:android | expo build:ios
 
+## Push Notifications
+
+There are two times. Local and push. Local are triggered by the app and displayed locally, not sent to other users or devices (i.e. a reminder app). Push notifications are received by the app, displayed locally, sent to one or more users remotely.
+
+### Local Notifications
+
+1. expo install expo-notifications
+2. For android, in app.json, set "android" option "useNextNotificationsApi" to true.
+3. On iOS, need to enable permissions with expo-permissions package.
+4. Use built in methods: Notifications.scheduleNotificationsAsync({});
+5. Note, by default, foreground apps won't display notifications, the app needs to run in a background.
+6. To display on foreground, change settings: Notifications.setNotificationHandler({handleNotification: async () => { return { shouldShowAlert: true }; }}).
+7. To react to foreground notifications use Notifications.addNotificationReceivedListener to monitor foreground apps (note, need to remove listener after use).
+8. To react to background notifications use Notifications.addNotificationResponseReceivedListener() method. It will run if a user interacted with a background notification.
+
+### Push Notifications
+
+1. Push notifications trigger local notifications by remote server side code.
+2. Have to use official push notification servers (Google or Apple) by means of a unique token ID.
+3. Like with Local Notifications, need to get Permissions first. Then use the same handlers to interact with foreground and background notifications.
+4. What differs is how you schedule/trigger the notifications.
+5. To use push notifications triggered by outside servers, sign up for official expo push notification services, managed by Expo.
+6. Use Notifications.getExpoPushTokenAsync(); Note, won't work on simulators - have to use real devices. Also, need to be logged in with Expo Developer Account to use the service.
+7. Use Expo Push Notification Tool to test push notifications.
+8. To trigger a push notification from the app, have to run fetch('https://exp.host/--/api/v2/push/send', { method: 'POST', headers: { 'Accept': 'application/json', 'Accept-Encoding': 'gzip, deflate', 'Content-Type': 'application/json'}, body: JSON.stringify({ to: `${TOKEN}`})});
+9. To send push notifications across devices, use the same logic, only instead of the local device, use the TOKEN of the device it's going to. To manage all the local device token, can fetch tokens (upon executing getExpoPushTokenAsync) to your own servers and save it in a database.
+10. Can also trigger push notifications from inside your own servers using Expo SDKs.
+
 
 
 
